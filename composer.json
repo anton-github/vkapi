@@ -1,0 +1,21 @@
+{
+  "name": "codeworkz/vkapi",
+  "type": "library",
+  "description": "",
+  "keywords": ["vk"],
+  "homepage": "https://github.com/anton-github/vkapi",
+  "license": "Apache License 2.0",
+  "authors": [
+    {
+      "name": "Anton",
+      "email": "shockfront00@gmail.com",
+      "homepage": "https://github.com/anton-github/"
+    }
+  ],
+  "require": {
+    "php": ">=5.4.0"
+  },
+  "autoload": {
+    "psr-4": {"vkapi\\": ""}
+  }
+}
