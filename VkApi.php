@@ -2,6 +2,7 @@
 namespace vkapi;
 
 use vkapi\exceptions\NoResponseException;
+use vkapi\exceptions\VkApiException;
 
 class VkApi extends Singleton
 {
@@ -10,8 +11,11 @@ class VkApi extends Singleton
     protected $token;
     protected $connectionTimeout = 30;
     protected $retriesConnectionCount = 3;
+    protected $maxRequestsPerSecond = 4;
 
+    private $askPeriod;
     private $curl;
+    private $lastAskTime;
 
     public function setToken($token)
     {
@@ -70,17 +74,8 @@ class VkApi extends Singleton
      */
     private function curlAsk($url)
     {
-        if (!isset($this->curl)) {
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-            if (isset($this->connectionTimeout)) {
-                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->connectionTimeout);
-            }
-            $this->curl = $ch;
-        }
-        curl_setopt($this->curl, CURLOPT_URL, $url);
+        $curl = $this->getCurl();
+        curl_setopt($curl, CURLOPT_URL, $url);
         $maxCount = 1;
         if (isset($this->retriesConnectionCount)) {
             $maxCount = $this->retriesConnectionCount;
@@ -89,7 +84,7 @@ class VkApi extends Singleton
         $result = false;
         $count = 0;
         while ($result == false && $count < $maxCount) {
-            $result = curl_exec($this->curl);
+            $result = $this->curlAskExec($curl);
             $count++;
         }
 
@@ -98,5 +93,53 @@ class VkApi extends Singleton
         }
 
         return $result;
+    }
+
+    private function getCurl()
+    {
+        if (!isset($this->curl)) {
+            $curl = curl_init();
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+            if (isset($this->connectionTimeout)) {
+                curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, $this->connectionTimeout);
+            }
+            $this->curl = $curl;
+        }
+        return $this->curl;
+    }
+
+    private function curlAskExec($ch)
+    {
+        if (isset($this->lastAskTime)) {
+            $period = $this->getAskPeriod();
+            $lastTime = $this->lastAskTime;
+            $now = $this->getMillisecondsTime();
+            $nextTime = $lastTime + $period;
+            if ($now < $nextTime) {
+                $wait = $nextTime - $now;
+                usleep($wait * 1000);
+            }
+        }
+        $result = curl_exec($ch);
+        $this->lastAskTime = $this->getMillisecondsTime();
+        return $result;
+    }
+
+    private function getMillisecondsTime()
+    {
+        return round(microtime(true) * 1000);
+    }
+
+    private function getAskPeriod()
+    {
+        if (!isset($this->askPeriod)) {
+            if ($this->maxRequestsPerSecond <= 0) {
+                throw new VkApiException('Max requests per second less than 1!');
+            }
+            $this->askPeriod = round(1000 / $this->maxRequestsPerSecond);
+        }
+        return $this->askPeriod;
     }
 }
