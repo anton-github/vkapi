@@ -11,7 +11,7 @@ class VkApi extends Singleton
     protected $token;
     protected $connectionTimeout = 30;
     protected $retriesConnectionCount = 3;
-    protected $maxRequestsPerSecond = 4;
+    protected $maxRequestsPerSecond = 3;
 
     private $askPeriod;
     private $curl;
