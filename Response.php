@@ -3,12 +3,9 @@ namespace vkapi;
 
 use vkapi\exceptions\ResponseErrorException;
 use vkapi\exceptions\UnknownResponseException;
-use vkapi\responses\ObjectResponse;
 
 /**
  * Class Response
- *
- * @property ObjectResponse $objectResponse
  *
  * @package vkapi
  */
@@ -45,6 +42,7 @@ class Response
             $arrayResponse = $this->prepareResponse($arrayData);
             $this->arrayResponse = $arrayResponse;
         }
+
         return $this->arrayResponse;
     }
 
@@ -55,10 +53,13 @@ class Response
             $this->handleError($data['error']);
         } elseif (isset($data['response'])) {
             $result = $data['response'];
+        } elseif (isset($data['access_token'])) {
+            $result = $data['access_token'];
         } else {
             $string = $this->getStringResponse();
             throw new UnknownResponseException("Response was {$string} on request url {$this->requestUrl}");
         }
+
         return $result;
     }
 
