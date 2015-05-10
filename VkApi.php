@@ -20,18 +20,21 @@ class VkApi extends Singleton
     public function setToken($token)
     {
         $this->token = $token;
+
         return $this;
     }
 
     public function setTimeout($timeout)
     {
         $this->connectionTimeout = $timeout;
+
         return $this;
     }
 
     public function setRetriesCount($count)
     {
         $this->retriesConnectionCount = $count;
+
         return $this;
     }
 
@@ -46,18 +49,25 @@ class VkApi extends Singleton
         $stringResponse = $this->ask($url);
         $response = new Response($stringResponse);
         $response->setRequestUrl($url);
+
         return $response->getArrayResponse();
     }
 
     private function buildRequestUrl(Request $request)
     {
         $method = $request->getMethod();
+        if ($request->isSeparate()) {
+            $url = $method;
+        } else {
+            $url = $this->apiUrl . $method;
+        }
         $params = $request->getParams();
         $params['v'] = $this->version;
         if (isset($this->token)) {
             $params['access_token'] = $this->token;
         }
-        $url = $this->apiUrl . $method . '?' . http_build_query($params);
+        $url = $url . '?' . http_build_query($params);
+
         return $url;
     }
 
@@ -107,6 +117,7 @@ class VkApi extends Singleton
             }
             $this->curl = $curl;
         }
+
         return $this->curl;
     }
 
@@ -124,6 +135,7 @@ class VkApi extends Singleton
         }
         $result = curl_exec($ch);
         $this->lastAskTime = $this->getMillisecondsTime();
+
         return $result;
     }
 
@@ -140,6 +152,7 @@ class VkApi extends Singleton
             }
             $this->askPeriod = round(1000 / $this->maxRequestsPerSecond);
         }
+
         return $this->askPeriod;
     }
 }
