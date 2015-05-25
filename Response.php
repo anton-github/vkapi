@@ -1,6 +1,7 @@
 <?php
 namespace vkapi;
 
+use vkapi\exceptions\AccessDeniedException;
 use vkapi\exceptions\ResponseErrorException;
 use vkapi\exceptions\UnknownResponseException;
 
@@ -79,6 +80,20 @@ class Response
         }
         $requestParams = json_encode($requestParams);
         $message = $message . " with params {$requestParams}";
-        throw new ResponseErrorException($message, $code);
+        $exceptionClass = $this->getExceptionByErrorCode($code);
+        throw new $exceptionClass($message, $code);
+    }
+
+    private function getExceptionByErrorCode($code)
+    {
+        switch ($code) {
+            case AccessDeniedException::ERROR_CODE:
+                $exception = AccessDeniedException::class;
+                break;
+            default:
+                $exception = ResponseErrorException::class;
+        }
+
+        return $exception;
     }
 }
