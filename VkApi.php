@@ -7,7 +7,7 @@ use vkapi\exceptions\VkApiException;
 class VkApi extends Singleton
 {
     private $apiUrl = "https://api.vk.com/method/";
-    protected $version = '5.25';
+    protected $version = '5.33';
     protected $token;
     protected $connectionTimeout = 30;
     protected $retriesConnectionCount = 3;
@@ -34,6 +34,13 @@ class VkApi extends Singleton
     public function setRetriesCount($count)
     {
         $this->retriesConnectionCount = $count;
+
+        return $this;
+    }
+
+    public function setCurl($curl)
+    {
+        $this->curl = $curl;
 
         return $this;
     }
