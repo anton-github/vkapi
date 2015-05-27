@@ -9,6 +9,7 @@ class VkApi extends Singleton
     private $apiUrl = "https://api.vk.com/method/";
     protected $version = '5.33';
     protected $token;
+    protected $tokensRange;
     protected $connectionTimeout = 30;
     protected $retriesConnectionCount = 3;
     protected $maxRequestsPerSecond = 3;
@@ -22,6 +23,27 @@ class VkApi extends Singleton
         $this->token = $token;
 
         return $this;
+    }
+
+    public function setTokensRange(array $tokens)
+    {
+        $this->tokensRange = $tokens;
+
+        return $this;
+    }
+
+    protected function getToken()
+    {
+        $result = null;
+        if (isset($this->token)) {
+            $result = $this->token;
+        } elseif ($this->tokensRange) {
+            $count = count($this->tokensRange);
+            $i = rand(0, $count - 1);
+            $result = $this->tokensRange[$i];
+        }
+
+        return $result;
     }
 
     public function setTimeout($timeout)
@@ -70,8 +92,8 @@ class VkApi extends Singleton
         }
         $params = $request->getParams();
         $params['v'] = $this->version;
-        if (isset($this->token)) {
-            $params['access_token'] = $this->token;
+        if ($token = $this->getToken()) {
+            $params['access_token'] = $token;
         }
         $url = $url . '?' . http_build_query($params);
 
