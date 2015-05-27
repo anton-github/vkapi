@@ -12,7 +12,7 @@ class VkApi extends Singleton
     protected $tokensRange;
     protected $connectionTimeout = 30;
     protected $retriesConnectionCount = 3;
-    protected $maxRequestsPerSecond = 3;
+    protected $maxRequestsPerSecond = null;
 
     private $askPeriod;
     private $curl;
@@ -152,7 +152,25 @@ class VkApi extends Singleton
         return $this->curl;
     }
 
+    private function isRequestFrequencyLimited()
+    {
+        return $this->maxRequestsPerSecond !== null;
+    }
+
     private function curlAskExec($ch)
+    {
+        if ($this->isRequestFrequencyLimited()) {
+            $this->checkRest();
+        }
+        $result = curl_exec($ch);
+        if ($this->isRequestFrequencyLimited()) {
+            $this->updatePoint();
+        }
+
+        return $result;
+    }
+
+    private function checkRest()
     {
         if (isset($this->lastAskTime)) {
             $period = $this->getAskPeriod();
@@ -164,10 +182,11 @@ class VkApi extends Singleton
                 usleep($wait * 1000);
             }
         }
-        $result = curl_exec($ch);
-        $this->lastAskTime = $this->getMillisecondsTime();
+    }
 
-        return $result;
+    private function updatePoint()
+    {
+        $this->lastAskTime = $this->getMillisecondsTime();
     }
 
     private function getMillisecondsTime()
