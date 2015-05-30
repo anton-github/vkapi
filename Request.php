@@ -8,6 +8,7 @@ class Request
     private $_params = [];
     private $method;
     private $separate;
+    private $callback;
 
     public function __construct($method, $separate = false)
     {
@@ -58,6 +59,18 @@ class Request
         $this->set('offset', $offset);
 
         return $this;
+    }
+
+    public function setCallback($callback)
+    {
+        $this->callback = $callback;
+
+        return $this;
+    }
+
+    public function getCallback()
+    {
+        return $this->callback;
     }
 
     public function getParams()

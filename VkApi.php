@@ -78,8 +78,12 @@ class VkApi extends Singleton
         $stringResponse = $this->ask($url);
         $response = new Response($stringResponse);
         $response->setRequestUrl($url);
+        $arrayResponse = $response->getArrayResponse();
+        if ($callback = $request->getCallback()) {
+            $arrayResponse = call_user_func($callback, $arrayResponse);
+        }
 
-        return $response->getArrayResponse();
+        return $arrayResponse;
     }
 
     private function buildRequestUrl(Request $request)
@@ -142,7 +146,7 @@ class VkApi extends Singleton
             curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
             curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
             curl_setopt($curl, CURLOPT_TIMEOUT, 30);
-            curl_setopt($curl, CURLOPT_VERBOSE, true);
+            //curl_setopt($curl, CURLOPT_VERBOSE, true);
             if (isset($this->connectionTimeout)) {
                 curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, $this->connectionTimeout);
             }
