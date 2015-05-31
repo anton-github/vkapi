@@ -9,4 +9,9 @@ class Groups extends Section
     {
         return new Request('groups.getById');
     }
+
+    public static function join()
+    {
+        return new Request('groups.join');
+    }
 }
