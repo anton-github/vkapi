@@ -8,6 +8,7 @@ class VkApi extends Singleton
 {
     private $apiUrl = "https://api.vk.com/method/";
     protected $version = '5.33';
+    protected $lang = 'ru';
     protected $token;
     protected $tokensRange;
     protected $connectionTimeout = 30;
@@ -96,6 +97,7 @@ class VkApi extends Singleton
         }
         $params = $request->getParams();
         $params['v'] = $this->version;
+        $params['lang'] = $this->lang;
         if ($token = $this->getToken()) {
             $params['access_token'] = $token;
         }
