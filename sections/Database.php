@@ -19,4 +19,9 @@ class Database extends Section
     {
         return new Request('database.getCitiesById');
     }
+    
+    public static function getCountriesById()
+    {
+        return new Request('database.getCountriesById');
+    }
 }
