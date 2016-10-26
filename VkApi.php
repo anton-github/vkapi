@@ -7,7 +7,7 @@ use vkapi\exceptions\VkApiException;
 class VkApi extends Singleton
 {
     private $apiUrl = "https://api.vk.com/method/";
-    protected $version = '5.33';
+    protected $version = '5.59';
     protected $lang = 'ru';
     protected $token;
     protected $tokensRange;
